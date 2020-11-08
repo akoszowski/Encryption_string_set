@@ -124,7 +124,7 @@ namespace jnp1 {
         else value_is_null = true;
         if (key != NULL) k = string(key);
         else key_is_null = true;
-        
+
         diag_print("encstrset_insert", id, v, k, value_is_null, key_is_null);
 
         if (value_is_null) {
@@ -147,7 +147,6 @@ namespace jnp1 {
             return true;
         }
         else {
-            // diagnostic msg jakis
             DIAGNOSTIC_PRINT("encstrset_insert: set #" + to_string(id) + ", cypher \"" + to_hex(cypher) + "\" was already present");
         }
         return false;
@@ -238,11 +237,9 @@ namespace jnp1 {
         auto find_src = map_of_sets.find(src_id);
         auto find_dst = map_of_sets.find(dst_id);
         if (find_src == map_of_sets.end()) {
-            //diagnostic message does not exist
             DIAGNOSTIC_PRINT_SET_ERR("encstrset_copy", to_string(src_id));
         }
         else if (find_dst == map_of_sets.end()) {
-            //diagnostic message does not exist
             DIAGNOSTIC_PRINT_SET_ERR("encstrset_copy", to_string(dst_id));
         }
         else {
