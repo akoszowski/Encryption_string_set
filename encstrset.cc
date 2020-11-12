@@ -10,18 +10,18 @@
     static const bool debug = false;
 #endif
 
-
-// TODO Linesize 80
 #define DIAGNOSTIC_PRINT(info) do { \
     if (!debug) { std::cerr << info << std::endl;} \
     } while(0)
 
 #define DIAGNOSTIC_PRINT_SET_ERR(func_name, set_number) do { \
-    if (!debug) { std::cerr << func_name << ": set #" << set_number << " does not exist" << std::endl;} \
+    if (!debug) { std::cerr << func_name << ": set #" << set_number \
+                            << " does not exist" << std::endl;} \
     } while(0)
 
 #define DIAGNOSTIC_PRINT_NULL_VALUE(func_name) do { \
-    if (!debug) { std::cerr << func_name << ": invalid value (NULL)" << std::endl;} \
+    if (!debug) { std::cerr << func_name << ": invalid value (NULL)" \
+                            << std::endl;} \
     } while(0)
 
 
@@ -32,31 +32,37 @@ namespace {
     using std::to_string;
     using std::stringstream;
 
+    // Static initialization
     unsigned long& cur_id() {
         static unsigned long cur_id = 0;
 
         return cur_id;
     }
 
-    //Static initialization
     auto& map_of_sets() {
         static unordered_map<unsigned long, unordered_set<string>> map_of_sets;
 
         return map_of_sets;
     }
 
-   void check_params(const string &func_name, unsigned long id, string &value, string &key, bool value_is_null, bool key_is_null) {
+   void check_params(const string &func_name, unsigned long id, string &value,
+                     string &key, bool value_is_null, bool key_is_null) {
+
         if (value_is_null && key_is_null) {
-            DIAGNOSTIC_PRINT(func_name + "(" + to_string(id) + ", " + "NULL" + ", " + "NULL)");
+            DIAGNOSTIC_PRINT(func_name + "(" + to_string(id)
+                             + ", " + "NULL" + ", " + "NULL)");
         }
         else if (value_is_null) {
-            DIAGNOSTIC_PRINT(func_name + "(" + to_string(id) + ", NULL" + ", \"" + key + "\")");
+            DIAGNOSTIC_PRINT(func_name + "(" + to_string(id)
+                             + ", NULL" + ", \"" + key + "\")");
         }
         else if (key_is_null) {
-            DIAGNOSTIC_PRINT(func_name + "(" + to_string(id) + ", \"" + value + "\", NULL)");
+            DIAGNOSTIC_PRINT(func_name + "(" + to_string(id)
+                             + ", \"" + value + "\", NULL)");
         }
         else {
-            DIAGNOSTIC_PRINT(func_name + "(" + to_string(id) + ", \"" + value + "\", \"" + key + "\")");
+            DIAGNOSTIC_PRINT(func_name + "(" + to_string(id)
+                             + ", \"" + value + "\", \"" + key + "\")");
         }
     }
 
@@ -91,6 +97,7 @@ namespace jnp1 {
         string func_name = "encstrset_new";
         DIAGNOSTIC_PRINT(func_name + "()");
 
+        //std::cout<<"AAA"<<std::endl;
         unordered_set<string> new_set;
         map_of_sets()[cur_id()] = new_set;
         DIAGNOSTIC_PRINT(func_name + ": set #" + to_string(cur_id()) + " created");
@@ -123,44 +130,54 @@ namespace jnp1 {
         }
 
         size_t size = it->second.size();
-        DIAGNOSTIC_PRINT(func_name + ": set #" + to_string(id) + " contains " + to_string(size) + " element(s)");
+        DIAGNOSTIC_PRINT(func_name + ": set #" + to_string(id)
+                         + " contains " + to_string(size) + " element(s)");
 
         return size;
     }
 
     bool encstrset_insert(unsigned long id, const char *value, const char *key) {
+        //std::cout<<"insert"<<std::endl;
         string v, k, func_name = "encstrset_insert";
         bool value_is_null = false, key_is_null = false;
 
         if (value != nullptr) v = string(value);
         else value_is_null = true;
-        if (key != nullptr && key[0] != '\0') k = string(key);
+        if (key != nullptr) k = string(key);
         else key_is_null = true;
 
         check_params(func_name, id, v, k, value_is_null, key_is_null);
 
+        //std::cout<<"A"<<std::endl;
         if (value_is_null) {
             DIAGNOSTIC_PRINT_NULL_VALUE(func_name);
             return false;
         }
 
+        //std::cout<<"B"<<std::endl;
         auto it = map_of_sets().find(id);
         if (it == map_of_sets().end()) {
             DIAGNOSTIC_PRINT_SET_ERR(func_name, to_string(id));
             return false;
         }
 
+        if (!key_is_null && key[0] == '\0') key_is_null = true;
+
         string cypher = encrypt(v, k, key_is_null);
         unordered_set<string> &s = it->second;
 
+        //std::cout<<"C"<<std::endl;
         auto elem = s.find(cypher);
         if (elem == s.end()) {
             s.insert(cypher);
-            DIAGNOSTIC_PRINT(func_name + ": set #" + to_string(id) + ", cypher \"" + to_hex(cypher) + "\" inserted");
+            DIAGNOSTIC_PRINT(func_name + ": set #" + to_string(id)
+                             + ", cypher \"" + to_hex(cypher) + "\" inserted");
             return true;
         }
         else {
-            DIAGNOSTIC_PRINT(func_name + ": set #" + to_string(id) + ", cypher \"" + to_hex(cypher) + "\" was already present");
+            DIAGNOSTIC_PRINT(func_name + ": set #" + to_string(id)
+                             + ", cypher \"" + to_hex(cypher)
+                             + "\" was already present");
         }
 
         return false;
@@ -170,9 +187,9 @@ namespace jnp1 {
         string v, k, func_name = "encstrset_remove";
         bool value_is_null = false, key_is_null = false;
 
-        if (value != NULL) v = string(value);
+        if (value != nullptr) v = string(value);
         else value_is_null = true;
-        if (key != NULL && key[0] != '\0') k = string(key);
+        if (key != nullptr) k = string(key);
         else key_is_null = true;
 
         check_params(func_name, id, v, k, value_is_null, key_is_null);
@@ -188,16 +205,21 @@ namespace jnp1 {
             return false;
         }
 
+        if (!key_is_null && key[0] == '\0') key_is_null = true;
+
         string cypher = encrypt(v, k, key_is_null);
         unordered_set<string> &s = it->second;
 
         auto elem = s.find(cypher);
         if (elem == s.end()) {
-            DIAGNOSTIC_PRINT(func_name + ": set #" + to_string(id) + ", cypher \"" + to_hex(cypher) + "\" was not present");
+            DIAGNOSTIC_PRINT(func_name + ": set #" + to_string(id)
+                             + ", cypher \"" + to_hex(cypher)
+                             + "\" was not present");
             return false;
         }
         s.erase(elem);
-        DIAGNOSTIC_PRINT(func_name + ": set #" + to_string(id) + ", cypher \"" + to_hex(cypher) + "\" removed");
+        DIAGNOSTIC_PRINT(func_name + ": set #" + to_string(id)
+                         + ", cypher \"" + to_hex(cypher) + "\" removed");
 
         return true;
     }
@@ -206,9 +228,9 @@ namespace jnp1 {
         string v, k, func_name = "encstrset_test";
         bool value_is_null = false, key_is_null = false;
 
-        if (value != NULL) v = string(value);
+        if (value != nullptr) v = string(value);
         else value_is_null = true;
-        if (key != NULL && key[0] != '\0') k = string(key);
+        if (key != nullptr) k = string(key);
         else key_is_null = true;
 
         check_params(func_name, id, v, k, value_is_null, key_is_null);
@@ -224,15 +246,20 @@ namespace jnp1 {
             return false;
         }
 
+        if (!key_is_null && key[0] == '\0') key_is_null = true;
+
         string cypher = encrypt(v, k, key_is_null);
         unordered_set<string> &s = it->second;
 
         auto elem = s.find(cypher);
         if (elem == s.end()) {
-            DIAGNOSTIC_PRINT(func_name + ": set #" + to_string(id) + ", cypher \"" + to_hex(cypher) + "\" is not present");
+            DIAGNOSTIC_PRINT(func_name + ": set #" + to_string(id)
+                             + ", cypher \"" + to_hex(cypher)
+                             + "\" is not present");
             return false;
         }
-        DIAGNOSTIC_PRINT(func_name + ": set #" + to_string(id) + ", cypher \"" + to_hex(cypher) + "\" is present");
+        DIAGNOSTIC_PRINT(func_name + ": set #" + to_string(id)
+                         + ", cypher \"" + to_hex(cypher) + "\" is present");
 
         return true;
     }
@@ -254,7 +281,8 @@ namespace jnp1 {
 
     void encstrset_copy(unsigned long src_id, unsigned long dst_id) {
         string func_name = "encstrset_copy";
-        DIAGNOSTIC_PRINT(func_name + "(" + to_string(src_id) + ", " + to_string(dst_id) + ")");
+        DIAGNOSTIC_PRINT(func_name + "(" + to_string(src_id)
+                         + ", " + to_string(dst_id) + ")");
 
         auto find_src = map_of_sets().find(src_id);
         auto find_dst = map_of_sets().find(dst_id);
@@ -272,10 +300,10 @@ namespace jnp1 {
                             "\" was already present in set #" + to_string(dst_id));
                 } else {
                     dst_set.insert(elem);
-                    DIAGNOSTIC_PRINT(func_name + ": cypher \"" + to_hex(elem) +
-                                     "\" copied from set #" +
-                                     to_string(src_id) + " to set #" +
-                                     to_string(dst_id));
+                    DIAGNOSTIC_PRINT(
+                            func_name + ": cypher \"" + to_hex(elem)
+                            + "\" copied from set #" + to_string(src_id)
+                            + " to set #" + to_string(dst_id));
                 }
             }
         }
