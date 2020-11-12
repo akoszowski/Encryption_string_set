@@ -8,6 +8,7 @@
 
 #ifdef __cplusplus
     #include <cstdlib>
+    #include <iostream>
 
     extern "C" {
 
