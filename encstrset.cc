@@ -97,7 +97,6 @@ namespace jnp1 {
         string func_name = "encstrset_new";
         DIAGNOSTIC_PRINT(func_name + "()");
 
-        //std::cout<<"AAA"<<std::endl;
         unordered_set<string> new_set;
         map_of_sets()[cur_id()] = new_set;
         DIAGNOSTIC_PRINT(func_name + ": set #" + to_string(cur_id()) + " created");
@@ -137,7 +136,6 @@ namespace jnp1 {
     }
 
     bool encstrset_insert(unsigned long id, const char *value, const char *key) {
-        //std::cout<<"insert"<<std::endl;
         string v, k, func_name = "encstrset_insert";
         bool value_is_null = false, key_is_null = false;
 
@@ -148,13 +146,11 @@ namespace jnp1 {
 
         check_params(func_name, id, v, k, value_is_null, key_is_null);
 
-        //std::cout<<"A"<<std::endl;
         if (value_is_null) {
             DIAGNOSTIC_PRINT_NULL_VALUE(func_name);
             return false;
         }
 
-        //std::cout<<"B"<<std::endl;
         auto it = map_of_sets().find(id);
         if (it == map_of_sets().end()) {
             DIAGNOSTIC_PRINT_SET_ERR(func_name, to_string(id));
@@ -166,7 +162,6 @@ namespace jnp1 {
         string cypher = encrypt(v, k, key_is_null);
         unordered_set<string> &s = it->second;
 
-        //std::cout<<"C"<<std::endl;
         auto elem = s.find(cypher);
         if (elem == s.end()) {
             s.insert(cypher);
